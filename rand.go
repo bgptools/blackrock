@@ -104,13 +104,13 @@ func Init(cyclerange int, seed int, rounds int) *Blackrock {
 	return &br
 }
 
-func encrypt(r int, a int, b int, m int, seed uint) int {
-	var L, R, tmp int
+func encrypt(r uint, a uint, b uint, m uint, seed uint) uint {
+	var L, R, tmp uint
 
 	L = m % a
 	R = m / a
 
-	for j := 1; j <= r; j++ {
+	for j := uint(1); j <= r; j++ {
 		if j&1 != 0 {
 			tmp = (L + read(j, R, seed)) % a
 		} else {
@@ -126,34 +126,34 @@ func encrypt(r int, a int, b int, m int, seed uint) int {
 	}
 }
 
-func getbyte(R, n int, seed uint, r uint) uint {
-	RR := uint(R)
-	nn := uint(n)
+func getbyte(R, n uint, seed uint, r uint) uint {
+	RR := R
+	nn := n
 
 	return (((RR) >> (nn * 8)) ^ seed ^ r) & 0xFF
 }
 
-func read(r, R int, seed uint) int {
-	var r0, r1, r2, r3 int
+func read(r, R uint, seed uint) uint {
+	var r0, r1, r2, r3 uint
 	rr := uint(r)
 
-	R ^= int((seed << rr) ^ (seed >> (64 - rr)))
+	R ^= uint((seed << rr) ^ (seed >> (64 - rr)))
 
-	r0 = int(sbox[getbyte(R, 0, seed, uint(r))]<<0 | sbox[getbyte(R, 1, seed, uint(r))]<<8)
-	r1 = int((sbox[getbyte(R, 2, seed, uint(r))]<<16 | sbox[getbyte(R, 3, seed, uint(r))]<<24))
-	r2 = int(sbox[getbyte(R, 4, seed, uint(r))]<<0 | sbox[getbyte(R, 5, seed, uint(r))]<<8)
-	r3 = int((sbox[getbyte(R, 6, seed, uint(r))]<<16 | sbox[getbyte(R, 7, seed, uint(r))]<<24))
+	r0 = uint(uint(sbox[getbyte(R, 0, seed, uint(r))])<<0 | uint(sbox[getbyte(R, 1, seed, uint(r))])<<8)
+	r1 = uint((uint(sbox[getbyte(R, 2, seed, uint(r))])<<16 | uint(sbox[getbyte(R, 3, seed, uint(r))])<<24))
+	r2 = uint(uint(sbox[getbyte(R, 4, seed, uint(r))])<<0 | uint(sbox[getbyte(R, 5, seed, uint(r))])<<8)
+	r3 = uint((uint(sbox[getbyte(R, 6, seed, uint(r))])<<16 | uint(sbox[getbyte(R, 7, seed, uint(r))])<<24))
 
 	R = r0 ^ r1 ^ r2<<23 ^ r3<<33
 
 	return R
 }
 
-func unencrypt(r uint, a, b, m, seed int) int {
+func unencrypt(r uint, a, b, m, seed uint) uint {
 
-	var L, R int
+	var L, R uint
 	var j uint
-	var tmp int
+	var tmp uint
 
 	if r&1 != 0 {
 		R = m % a
@@ -165,7 +165,7 @@ func unencrypt(r uint, a, b, m, seed int) int {
 
 	for j = r; j >= 1; j-- {
 		if j&1 != 0 {
-			tmp = read(int(j), int(L), uint(seed))
+			tmp = read(uint(j), uint(L), uint(seed))
 			if tmp > R {
 				tmp = (tmp - R)
 				tmp = a - (tmp % a)
@@ -178,7 +178,7 @@ func unencrypt(r uint, a, b, m, seed int) int {
 				tmp %= a
 			}
 		} else {
-			tmp = read(int(j), int(L), uint(seed))
+			tmp = read(uint(j), uint(L), uint(seed))
 			if tmp > R {
 				tmp = (tmp - R)
 				tmp = b - (tmp % b)
@@ -196,12 +196,14 @@ func unencrypt(r uint, a, b, m, seed int) int {
 	return a*R + L
 }
 
-func (br *Blackrock) Shuffle(m int) int {
-	var c int
+func (br *Blackrock) Shuffle(mm int) uint {
+	var c uint
 
-	c = encrypt(br.rounds, br.a, br.b, m, uint(br.seed))
-	for c >= br.cyclerange {
-		c = encrypt(br.rounds, br.a, br.b, c, uint(br.seed))
+	m := uint(mm)
+
+	c = encrypt(uint(br.rounds), uint(br.a), uint(br.b), m, uint(br.seed))
+	for c >= uint(br.cyclerange) {
+		c = encrypt(uint(br.rounds), uint(br.a), uint(br.b), c, uint(br.seed))
 
 	}
 
