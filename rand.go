@@ -46,10 +46,6 @@ type Blackrock struct {
 	b          int
 	seed       int
 	rounds     int
-	aBits      int
-	aMask      int
-	bBits      int
-	bMask      int
 }
 
 func Init(cyclerange int, seed int, rounds int) *Blackrock {
@@ -63,35 +59,28 @@ func Init(cyclerange int, seed int, rounds int) *Blackrock {
 	case 0:
 		br.a = 0
 		br.b = 0
-		break
 	case 1:
 		br.a = 1
 		br.b = 1
-		break
 	case 2:
 		br.a = 1
 		br.b = 2
-		break
 	case 3:
 		br.a = 2
 		br.b = 2
-		break
 	case 4:
 	case 5:
 	case 6:
 		br.a = 2
 		br.b = 3
-		break
 	case 7:
 	case 8:
 		br.a = 3
 		br.b = 3
-		break
 	default:
 		br.cyclerange = cyclerange
 		br.a = int(foo - 2)
 		br.b = int(foo + 3)
-		break
 	}
 
 	for br.a*br.b <= cyclerange {
@@ -147,53 +136,6 @@ func read(r, R uint, seed uint) uint {
 	R = r0 ^ r1 ^ r2<<23 ^ r3<<33
 
 	return R
-}
-
-func unencrypt(r uint, a, b, m, seed uint) uint {
-
-	var L, R uint
-	var j uint
-	var tmp uint
-
-	if r&1 != 0 {
-		R = m % a
-		L = m / a
-	} else {
-		L = m % a
-		R = m / a
-	}
-
-	for j = r; j >= 1; j-- {
-		if j&1 != 0 {
-			tmp = read(uint(j), uint(L), uint(seed))
-			if tmp > R {
-				tmp = (tmp - R)
-				tmp = a - (tmp % a)
-				if tmp == a {
-					tmp = 0
-
-				}
-			} else {
-				tmp = (R - tmp)
-				tmp %= a
-			}
-		} else {
-			tmp = read(uint(j), uint(L), uint(seed))
-			if tmp > R {
-				tmp = (tmp - R)
-				tmp = b - (tmp % b)
-				if tmp == b {
-					tmp = 0
-				}
-			} else {
-				tmp = (R - tmp)
-				tmp %= b
-			}
-		}
-		R = L
-		L = tmp
-	}
-	return a*R + L
 }
 
 func (br *Blackrock) Shuffle(mm int) uint {
